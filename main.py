@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from logic import Pokemon, Wizard, Fighter
+from logic import Pokemon, Warrior, Mage
 import random
 from config import token
 
@@ -22,9 +22,9 @@ async def go(ctx):
         if chance == 1:
             pokemon = Pokemon(author)
         elif chance == 2:
-            pokemon = Wizard(author)
+            pokemon = Warrior(author)
         elif chance == 3:
-            pokemon = Fighter(author)
+            pokemon = Mage(author)
         await ctx.send(await pokemon.info())
         image_url = await pokemon.show_img()
         if image_url:
@@ -59,5 +59,38 @@ async def info(ctx):
     else:
         await ctx.send("Anda tidak memiliki Pokémon!")
 
+@bot.command()
+async def saldir(ctx, target):
+    if target in Pokemon.pokemons.values() and ctx.author.name in Pokemon.pokemons.keys():
+        attacker=Pokemon.pokemons[ctx.author.name]
+        await ctx.send(await attacker.saldir(target))
+    else:
+        await ctx.send("Kendin mi savaşacağın pokemonla?")
+
+@bot.command()
+async def bilgi(ctx):
+    if ctx.author.name in Pokemon.pokemons.keys():
+        pokemon=Pokemon.pokemons[ctx.author.name]
+        await ctx.send(await pokemon.info())
+    else:
+        ctx.send("Kendine pokemon seçiniz.")
+
+
+@bot.command()
+async def besle(ctx):
+    if not hasattr(ctx.author, 'pokemon'):  # Kullanıcının Pokémon'u yoksa
+        await ctx.send(f"{ctx.author.mention}, önce bir Pokémon seçmelisin!")
+        return
+
+    pokemon = ctx.author.pokemon
+
+    # Pokémon'u besleme işlemi
+    try:
+        message = await pokemon.feed()
+        await ctx.send(f"{ctx.author.mention}, {message}")
+    except Exception as e:
+        await ctx.send(f"{ctx.author.mention}, bir hata oluştu: {e}") 
+
 
 bot.run(token)
+
